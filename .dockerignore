@@ -1,0 +1,9 @@
+# 根目录 .dockerignore：构建上下文排除项，加快构建且避免带入敏感/无用文件
+.git
+.gitignore
+.env
+backend/.env
+backend/.venv
+**/__pycache__
+**/*.pyc
+.dockerignore

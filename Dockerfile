@@ -8,8 +8,8 @@ WORKDIR /app
 # 安装 uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-# 后端依赖
-COPY backend/pyproject.toml backend/uv.lock ./
+# 后端依赖（README.md 为 pyproject.toml 所需）
+COPY backend/pyproject.toml backend/uv.lock backend/README.md ./
 RUN uv sync --frozen --no-dev --no-install-project
 
 # 后端代码

@@ -1,6 +1,6 @@
 # ECS 生产部署：在项目根目录执行
-# 用法：docker compose -f docker-compose.prod.yml up -d
-# 需先在 backend 目录配置好 .env（DATABASE_URL 等）
+# 用法：docker compose -f docker-compose.prod.yml up -d --build
+# 首次运行前必须在项目根下创建 backend/.env（可从 backend/.env.example 复制并填写 DATABASE_URL 等）
 
 services:
   api:
@@ -9,8 +9,9 @@ services:
       dockerfile: Dockerfile
     image: lumist:latest
     ports:
-      - "8000:8000"
-    env_file: backend/.env
+      - "8082:8000"
+    env_file:
+      - backend/.env
     environment:
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
     restart: unless-stopped
