@@ -15,8 +15,15 @@ services:
     environment:
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
     restart: unless-stopped
+    networks:
+      - default
+      - backend_default
 
-# 若使用云数据库 RDS，只跑上面 api 即可。
+networks:
+  backend_default:
+    external: true
+
+# 若使用云数据库 RDS，只跑上面 api 即可，可去掉 networks 和 backend_default。
 # 若要在同一台 ECS 跑 PostgreSQL，可取消下面注释并先 up db 再 up api。
 
 #  db:

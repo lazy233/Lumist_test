@@ -2,11 +2,12 @@ import time
 import uuid
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.requests import Request
+from sqlalchemy.exc import OperationalError
 
 from app.api import categories, todos
 from app.config import settings
@@ -65,6 +66,28 @@ class RequestIdAndLoggingMiddleware(BaseHTTPMiddleware):
 
 
 app.add_middleware(RequestIdAndLoggingMiddleware)
+
+
+@app.exception_handler(OperationalError)
+async def db_operational_error_handler(request: Request, exc: OperationalError):
+    """数据库连接/执行失败时返回 503，便于前端提示。"""
+    logger.exception("database error: %s", exc)
+    return JSONResponse(
+        status_code=503,
+        content={"detail": "数据库连接失败，请检查 DATABASE_URL 或数据库服务是否可用。"},
+    )
+
+
+@app.exception_handler(RuntimeError)
+async def runtime_error_handler(request: Request, exc: RuntimeError):
+    """如 DATABASE_URL 未配置等。"""
+    if "DATABASE_URL" in str(exc):
+        logger.warning("config error: %s", exc)
+        return JSONResponse(
+            status_code=503,
+            content={"detail": "数据库未配置，请在 backend/.env 中设置 DATABASE_URL。"},
+        )
+    raise exc
 
 
 @app.get("/health")

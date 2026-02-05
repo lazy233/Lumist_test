@@ -1,5 +1,7 @@
 # 项目根目录默认 compose：直接执行 docker compose up -d --build 即可
 # 服务映射到主机 8082 端口，首次运行前创建 backend/.env（从 backend/.env.example 复制并填写）
+# 若复用 backend 目录下的 PostgreSQL（backend/docker-compose.yml 的 db 服务），
+# 需先在同一台机执行过 backend 的 docker compose up，再启动本 compose，并保持 DATABASE_URL=postgresql://...@db:5432/todo_db
 
 services:
   api:
@@ -14,3 +16,10 @@ services:
     environment:
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
     restart: unless-stopped
+    networks:
+      - default
+      - backend_default
+
+networks:
+  backend_default:
+    external: true
