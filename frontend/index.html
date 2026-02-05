@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>实习生 · 每日任务与 OKR</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <h1>实习生 · 每日任务与 OKR</h1>
+      <p class="subtitle">记录每日任务与个人目标与关键结果，使用者：实习生本人</p>
+    </header>
+
+    <!-- 主导航：每日任务 | 我的 OKR -->
+    <nav class="tabs">
+      <button type="button" class="tab active" data-tab="daily">每日任务</button>
+      <button type="button" class="tab" data-tab="okr">我的 OKR</button>
+    </nav>
+
+    <main class="main">
+      <!-- ========== 每日任务 视图 ========== -->
+      <div id="view-daily" class="view view-active">
+        <aside class="sidebar">
+          <section class="panel">
+            <h2>分类</h2>
+            <div id="category-list" class="category-list"></div>
+            <form id="form-add-category" class="form-add-category">
+              <input type="text" id="input-category-name" placeholder="新分类名称" />
+              <button type="submit">添加</button>
+            </form>
+          </section>
+          <section class="panel">
+            <h2>筛选</h2>
+            <div class="filters">
+              <label>
+                <select id="filter-status">
+                  <option value="">全部状态</option>
+                  <option value="pending">待办</option>
+                  <option value="in_progress">进行中</option>
+                  <option value="done">已完成</option>
+                </select>
+              </label>
+              <label>
+                <select id="filter-priority">
+                  <option value="">全部优先级</option>
+                  <option value="low">低</option>
+                  <option value="medium">中</option>
+                  <option value="high">高</option>
+                </select>
+              </label>
+              <label>
+                <select id="filter-category">
+                  <option value="">全部分类</option>
+                </select>
+              </label>
+              <button type="button" id="btn-reset-filter" class="btn-ghost">重置</button>
+            </div>
+          </section>
+        </aside>
+
+        <div class="content">
+          <section class="panel panel-todos">
+            <div class="panel-head">
+              <h2>今日任务列表</h2>
+              <button type="button" id="btn-new-todo" class="btn-primary">新建任务</button>
+            </div>
+            <div class="natural-language-todo">
+              <label for="input-natural-language" class="natural-language-label">用一句话新建任务</label>
+              <div class="natural-language-row">
+                <input type="text" id="input-natural-language" class="natural-language-input" placeholder="例如：明天下午 3 点和导师开会讨论开题" />
+                <button type="button" id="btn-natural-language-todo" class="btn-primary">智能解析并创建</button>
+              </div>
+            </div>
+            <div id="api-status" class="api-status"></div>
+            <div id="todo-list" class="todo-list"></div>
+          </section>
+        </div>
+      </div>
+
+      <!-- ========== 我的 OKR 视图 ========== -->
+      <div id="view-okr" class="view">
+        <div class="okr-intro">
+          <p>记录本周期内的<strong>目标（Objective）</strong>与<strong>关键结果（Key Results）</strong>，便于自我复盘与导师对齐。</p>
+        </div>
+        <div class="okr-toolbar">
+          <select id="okr-period">
+            <option value="month">本月</option>
+            <option value="quarter">本季度</option>
+          </select>
+          <button type="button" id="btn-new-objective" class="btn-primary">新建目标（O）</button>
+        </div>
+        <div id="okr-list" class="okr-list"></div>
+      </div>
+    </main>
+
+    <!-- 新建/编辑 每日任务 弹窗 -->
+    <div id="modal-todo" class="modal" hidden>
+      <div class="modal-backdrop"></div>
+      <div class="modal-box">
+        <h3 id="modal-title">新建任务</h3>
+        <form id="form-todo">
+          <input type="hidden" id="todo-id" />
+          <div class="field">
+            <label for="todo-title">标题 *</label>
+            <input type="text" id="todo-title" required placeholder="任务标题" />
+          </div>
+          <div class="field">
+            <label for="todo-description">描述</label>
+            <textarea id="todo-description" rows="3" placeholder="详细描述"></textarea>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="todo-status">状态</label>
+              <select id="todo-status">
+                <option value="pending">待办</option>
+                <option value="in_progress">进行中</option>
+                <option value="done">已完成</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="todo-priority">优先级</label>
+              <select id="todo-priority">
+                <option value="low">低</option>
+                <option value="medium">中</option>
+                <option value="high">高</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="todo-due-date">截止日期</label>
+            <input type="date" id="todo-due-date" />
+          </div>
+          <div class="field">
+            <label for="todo-category">分类</label>
+            <select id="todo-category">
+              <option value="">无</option>
+            </select>
+          </div>
+          <div class="form-actions">
+            <button type="button" id="btn-cancel-todo" class="btn-secondary">取消</button>
+            <button type="submit" class="btn-primary">保存</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- 新建/编辑 目标（O）弹窗 -->
+    <div id="modal-objective" class="modal" hidden>
+      <div class="modal-backdrop"></div>
+      <div class="modal-box">
+        <h3 id="modal-objective-title">新建目标（O）</h3>
+        <form id="form-objective">
+          <input type="hidden" id="objective-id" />
+          <div class="field">
+            <label for="objective-title">目标描述 *</label>
+            <input type="text" id="objective-title" required placeholder="例：熟悉 FastAPI 与项目部署流程" />
+          </div>
+          <div class="form-actions">
+            <button type="button" id="btn-cancel-objective" class="btn-secondary">取消</button>
+            <button type="submit" class="btn-primary">保存</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- 新建 关键结果（KR）弹窗 -->
+    <div id="modal-kr" class="modal" hidden>
+      <div class="modal-backdrop"></div>
+      <div class="modal-box">
+        <h3>新建关键结果（KR）</h3>
+        <form id="form-kr">
+          <input type="hidden" id="kr-objective-id" />
+          <div class="field">
+            <label for="kr-content">关键结果描述 *</label>
+            <input type="text" id="kr-content" required placeholder="例：完成 3 个 GET/POST 接口并接入 PG" />
+          </div>
+          <div class="form-actions">
+            <button type="button" id="btn-cancel-kr" class="btn-secondary">取消</button>
+            <button type="submit" class="btn-primary">保存</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
