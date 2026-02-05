@@ -12,8 +12,11 @@ from app.api import categories, todos
 from app.config import settings
 from app.core.logging import get_logger, request_id_ctx
 
-# 前端静态目录：项目根目录下的 frontend（与 backend 同级）
-_FRONTEND_DIR = Path(__file__).resolve().parent.parent.parent / "frontend"
+# 前端静态目录：本地为项目根/frontend，Docker 为 /app/frontend
+_root = Path(__file__).resolve().parent.parent  # backend/app -> backend 或 /app
+_FRONTEND_DIR = _root.parent / "frontend"  # 项目根/frontend（本地）
+if not _FRONTEND_DIR.is_dir():
+    _FRONTEND_DIR = _root / "frontend"  # Docker：/app/frontend
 
 app = FastAPI(title="待办事项管理平台", version="0.1.0")
 logger = get_logger(__name__)
