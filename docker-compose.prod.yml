@@ -1,6 +1,5 @@
-# ECS 生产部署：在项目根目录执行
+# 与 docker-compose.yml 一致，一键启动 API + PostgreSQL
 # 用法：docker compose -f docker-compose.prod.yml up -d --build
-# 首次运行前必须在项目根下创建 backend/.env（可从 backend/.env.example 复制并填写 DATABASE_URL 等）
 
 services:
   api:
@@ -14,33 +13,26 @@ services:
       - backend/.env
     environment:
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
-    networks:
-      - default
-      - backend_default
 
-networks:
-  backend_default:
-    external: true
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: todo_user
+      POSTGRES_PASSWORD: "123456"
+      POSTGRES_DB: todo_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U todo_user -d todo_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
-# 若使用云数据库 RDS，只跑上面 api 即可，可去掉 networks 和 backend_default。
-# 若要在同一台 ECS 跑 PostgreSQL，可取消下面注释并先 up db 再 up api。
-
-#  db:
-#    image: postgres:16-alpine
-#    environment:
-#      POSTGRES_USER: todo_user
-#      POSTGRES_PASSWORD: "123456"
-#      POSTGRES_DB: todo_db
-#    volumes:
-#      - pgdata:/var/lib/postgresql/data
-#      - ./backend/scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
-#    healthcheck:
-#      test: ["CMD-SHELL", "pg_isready -U todo_user -d todo_db"]
-#      interval: 5s
-#      timeout: 5s
-#      retries: 5
-#    restart: unless-stopped
-#
-#volumes:
-#  pgdata:
+volumes:
+  pgdata:
